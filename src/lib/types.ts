@@ -15,7 +15,10 @@ export interface RoundView {
 export interface RoomView {
   id: string; code: string; mode: Mode; winning_score: number; laps: number; timer_secs: number | null
   status: 'lobby' | 'playing' | 'finished'
-  game: { phase: 'playing' | 'sudden_death' | 'finished'; active?: string; winners: string[] }
+  game: {
+    phase?: 'playing' | 'sudden_death' | 'finished'; winners?: string[]; active?: string
+    sd_tied?: string[]; sd_pending?: string[]; sd_start?: Record<string, number>
+  }
 }
 export interface RoomState {
   room: RoomView; is_host: boolean; my_seat: string | null
