@@ -26,6 +26,7 @@ export const api = {
   lockLr: (round: string, guess: 'left' | 'right') => rpc<void>('lock_lr', { p_round: round, p_guess: guess }),
   revealRound: (round: string) => rpc<void>('reveal_round', { p_round: round }),
   nextTurn: (room: string) => rpc<void>('next_turn', { p_room: room }),
+  endGame: (room: string) => rpc<void>('end_game', { p_room: room }),
   rematch: (room: string) => rpc<void>('rematch', { p_room: room }),
   getTarget: (round: string) => rpc<number | null>('get_target', { p_round: round }),
   getRoomState: (code: string) => rpc<RoomState | null>('get_room_state', { p_code: code }),
