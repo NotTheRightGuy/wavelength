@@ -16,6 +16,8 @@ export const api = {
   updateSeat: (seat: string, name: string, members: string[]) => rpc<void>('update_seat', { p_seat: seat, p_name: name, p_members: members }),
   kickSeat: (seat: string) => rpc<void>('kick_seat', { p_seat: seat }),
   transferHost: (room: string, session: string) => rpc<void>('transfer_host', { p_room: room, p_session: session }),
+  updateRoomSettings: (room: string, winning: number, laps: number, timer: number | null) =>
+    rpc<void>('update_room_settings', { p_room: room, p_winning: winning, p_laps: laps, p_timer: timer }),
   startGame: (room: string) => rpc<void>('start_game', { p_room: room }),
   pickCard: (round: string, card: number) => rpc<void>('pick_card', { p_round: round, p_card: card }),
   finishSpin: (round: string) => rpc<void>('finish_spin', { p_round: round }),
