@@ -38,7 +38,7 @@ select pick_card((select v::uuid from ctx where k = 'round'),
 
 select is((select count(*)::int from round_secrets), 1, 'active seat can read the target');
 reset role;
-insert into ctx select 'target', target::text from round_secrets;
+insert into ctx select 'target', target::text from round_secrets where round_id = (select v::uuid from ctx where k = 'round');
 select tests.as_user(tests.u(1));
 select is(get_target((select v::uuid from ctx where k = 'round')), (select v::numeric from ctx where k = 'target'),
   'get_target returns the value to the active seat');
