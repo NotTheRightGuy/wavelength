@@ -87,7 +87,7 @@ export function Game({ state, refresh }: { state: RoomState; refresh: () => void
     }
     body = (
       <>
-        <CardLabels card={card} clue={round.clue} />
+        <CardLabels card={card} clue={['dial', 'lr', 'reveal'].includes(round.phase) ? (round.clue ?? '') : null} />
         {phase}
       </>
     )

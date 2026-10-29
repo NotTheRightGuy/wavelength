@@ -86,7 +86,7 @@ function ScreenBody({ state }: { state: RoomState }) {
     }
     center = (
       <>
-        <CardLabels card={card} clue={round.clue} />
+        <CardLabels card={card} clue={['dial', 'lr', 'reveal'].includes(round.phase) ? (round.clue ?? '') : null} />
         {round.phase === 'reveal' ? (
           <Reveal state={state} viewOnly wide paused={paused} onTogglePause={toggle} />
         ) : round.phase === 'dial' || round.phase === 'lr' ? (
