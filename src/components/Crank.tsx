@@ -56,7 +56,7 @@ export function Crank({ onDone, onProgress, minTurns = 2 }: {
     const prev = lastWheel.current
     lastWheel.current = w
     addTravel(dW)
-    if (clicksCrossed(prev / DEG, w / DEG, CLICK_STEP / GEAR_RATIO) > 0) audio.ratchet(Math.min(1, dW / speedScale))
+    if (clicksCrossed(prev / DEG, w / DEG, CLICK_STEP * GEAR_RATIO) > 0) audio.ratchet(Math.min(1, dW / speedScale))
   }
 
   const turn = (deltaRad: number, dt: number) => {

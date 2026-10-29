@@ -6,9 +6,13 @@ import { prefersReducedMotion } from '@/lib/haptics'
 const CLOSE_DURATION = 0.25
 
 export function Shutter({ closed, children }: { closed: boolean; children: React.ReactNode }) {
-  const first = useRef(true)
+  const prev = useRef<boolean | undefined>(undefined)
+  // a (StrictMode) remount must behave like a first mount
+  useEffect(() => () => { prev.current = undefined }, [])
   useEffect(() => {
-    if (first.current) { first.current = false; return }
+    if (prev.current === undefined) { prev.current = closed; return }
+    if (prev.current === closed) return
+    prev.current = closed
     if (!closed) { audio.swoosh(); return }
     // clunk when the plates meet
     const id = setTimeout(() => audio.clunk(), prefersReducedMotion() ? 150 : CLOSE_DURATION * 1000)
