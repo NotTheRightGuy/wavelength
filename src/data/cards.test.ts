@@ -14,4 +14,8 @@ describe('CARDS', () => {
     const keys = CARDS.map((c) => `${c.left}|${c.right}`.toLowerCase())
     expect(new Set(keys).size).toBe(keys.length)
   })
+  it('has no reversed duplicate pairs', () => {
+    const keys = new Set(CARDS.map((c) => `${c.left}|${c.right}`.toLowerCase()))
+    for (const c of CARDS) expect(keys.has(`${c.right}|${c.left}`.toLowerCase())).toBe(false)
+  })
 })
