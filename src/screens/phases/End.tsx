@@ -8,6 +8,7 @@ import { prefersReducedMotion } from '@/lib/haptics'
 import { SEAT_COLORS } from '@/lib/seat-colors'
 import type { RoomState } from '@/lib/types'
 import { cn } from '@/lib/utils'
+import { Recap } from './Recap'
 
 const PIECES = 40
 
@@ -89,6 +90,8 @@ export function End({ state }: { state: RoomState }) {
           })}
         </ol>
       </Cardstock>
+
+      <Recap state={state} />
 
       {state.is_host ? (
         <PlasticButton data-testid="rematch" size="xl" block loading={pending} onClick={rematch}>Rematch</PlasticButton>
