@@ -1,5 +1,6 @@
 -- Writes happen only via security-definer RPCs (run as owner). TRUNCATE ignores RLS.
 revoke insert, update, delete, truncate on all tables in schema public from anon, authenticated;
+alter default privileges in schema public revoke insert, update, delete, truncate on tables from anon, authenticated;
 
 create function _require_host(p_room uuid) returns void
 language plpgsql security definer set search_path = public as $$
@@ -66,7 +67,9 @@ end $$;
 create function update_seat(p_seat uuid, p_name text, p_members text[]) returns void
 language plpgsql security definer set search_path = public as $$
 begin
-  update seats set name = p_name, members = p_members
+  update seats set name = p_name,
+    members = case (select mode from rooms where id = seats.room_id)
+                when 'free' then array[p_name] else p_members end
   where id = p_seat and session_id = auth.uid()
     and exists (select 1 from rooms where id = seats.room_id and status = 'lobby');
 end $$;
@@ -77,6 +80,7 @@ declare v_room uuid;
 begin
   select room_id into v_room from seats where id = p_seat;
   perform _require_host(v_room);
+  perform 1 from rooms where id = v_room for update;
   if not exists (select 1 from rooms where id = v_room and status = 'lobby') then
     raise exception 'cannot kick after start';
   end if;
@@ -87,6 +91,10 @@ create function transfer_host(p_room uuid, p_session uuid) returns void
 language plpgsql security definer set search_path = public as $$
 begin
   perform _require_host(p_room);
+  if not exists (select 1 from seats where room_id = p_room and session_id = p_session)
+     and not exists (select 1 from viewers where room_id = p_room and session_id = p_session) then
+    raise exception 'new host must be in the room';
+  end if;
   update rooms set host_session = p_session where id = p_room;
 end $$;
 
@@ -142,24 +150,38 @@ begin
   perform new_round(p_room);
 end $$;
 
--- Snapshot for clients: never includes the target; guesses follow RLS.
+-- Snapshot for clients. Gating rule: anyone holding the room code gets room
+-- (minus host_session), is_host, my_seat and seats (minus session_id). round,
+-- cards and guesses are returned only if is_room_member(room). guesses mirror
+-- the guesses_read RLS rule: teams -> all rows of the current round; free ->
+-- only the caller's own seat unless phase = 'reveal'. Never exposes
+-- round_secrets, host_session or session_id.
 create function get_room_state(p_code text) returns jsonb
-language plpgsql stable security invoker set search_path = public as $$
+language plpgsql stable security definer set search_path = public as $$
 declare
   r rooms;
   v_round rounds;
+  v_member boolean;
 begin
   select * into r from rooms where code = upper(p_code);
   if not found then return null; end if;
-  select * into v_round from rounds where room_id = r.id order by number desc limit 1;
+  v_member := is_room_member(r.id);
+  if v_member then
+    select * into v_round from rounds where room_id = r.id order by number desc limit 1;
+  end if;
   return jsonb_build_object(
     'room', to_jsonb(r) - 'host_session',
     'is_host', r.host_session = auth.uid(),
     'my_seat', (select id from seats where room_id = r.id and session_id = auth.uid()),
     'seats', coalesce((select jsonb_agg(to_jsonb(s) - 'session_id' order by s.position) from seats s where s.room_id = r.id), '[]'),
-    'round', to_jsonb(v_round),
-    'cards', coalesce((select jsonb_agg(to_jsonb(c)) from cards c where c.id = any(v_round.card_options) or c.id = v_round.card_id), '[]'),
-    'guesses', coalesce((select jsonb_agg(to_jsonb(g)) from guesses g where g.round_id = v_round.id), '[]')
+    'round', case when v_member then to_jsonb(v_round) else null end,
+    'cards', case when v_member then coalesce((select jsonb_agg(to_jsonb(c)) from cards c where c.id = any(v_round.card_options) or c.id = v_round.card_id), '[]') else '[]'::jsonb end,
+    'guesses', case when v_member then coalesce((
+        select jsonb_agg(to_jsonb(g)) from guesses g
+        where g.round_id = v_round.id
+          and (r.mode = 'teams' or v_round.phase = 'reveal'
+               or exists (select 1 from seats s where s.id = g.seat_id and s.session_id = auth.uid()))
+      ), '[]') else '[]'::jsonb end
   );
 end $$;
 
