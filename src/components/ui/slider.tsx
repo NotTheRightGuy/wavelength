@@ -40,6 +40,7 @@ function Slider({
           <SliderPrimitive.Thumb
             data-slot="slider-thumb"
             key={index}
+            aria-label={props['aria-label']}
             className="relative block size-8 shrink-0 rounded-full border-[3px] border-plastic-orange-lip bg-[radial-gradient(circle_at_40%_30%,#ffffff,var(--plastic-cream)_45%,#e9d6a8)] shadow-lift-2 transition-transform duration-200 ease-spring select-none after:absolute after:-inset-2 hover:scale-105 active:scale-95 has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-3 has-[:focus-visible]:outline-plastic-cobalt disabled:pointer-events-none disabled:opacity-60 motion-reduce:transition-none"
           />
         ))}
