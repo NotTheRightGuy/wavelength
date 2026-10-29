@@ -23,4 +23,5 @@ export interface RoomView {
 export interface RoomState {
   room: RoomView; is_host: boolean; my_seat: string | null
   seats: SeatView[]; round: RoundView | null; cards: CardView[]; guesses: GuessView[]
+  locked_count: number | null
 }
