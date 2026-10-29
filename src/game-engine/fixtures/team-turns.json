@@ -1,0 +1,11 @@
+[
+  { "name": "plain play", "teams": 3, "winning": 10,
+    "turns": [[3, [1]], [2, []], [4, [0, 1]]],
+    "expect": { "scores": [4, 4, 4], "active": 0, "phase": "playing", "winners": [] } },
+  { "name": "catch-up then pass", "teams": 2, "winning": 10,
+    "turns": [[0, []], [4, []], [2, []], [4, []], [4, []], [2, []]],
+    "expect": { "scores": [8, 8], "active": 1, "phase": "playing", "winners": [] } },
+  { "name": "outright win", "teams": 2, "winning": 4,
+    "turns": [[2, []], [4, []]],
+    "expect": { "scores": [2, 4], "active": 1, "phase": "finished", "winners": [1] } }
+]
