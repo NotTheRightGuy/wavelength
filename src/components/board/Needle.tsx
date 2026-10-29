@@ -3,9 +3,9 @@ import { useEffect } from 'react'
 import { valueToPoint } from '@/lib/dial-geometry'
 import { prefersReducedMotion } from '@/lib/haptics'
 
-export function Needle({ value, cx, cy, r, color = '#d6262b', glow }: { value: number; cx: number; cy: number; r: number; color?: string; glow?: boolean }) {
+export function Needle({ value, cx, cy, r, color = '#d6262b', glow, smooth = true }: { value: number; cx: number; cy: number; r: number; color?: string; glow?: boolean; smooth?: boolean }) {
   const spring = useSpring(value, prefersReducedMotion() ? { duration: 0 } : { stiffness: 260, damping: 26, mass: 0.6 })
-  useEffect(() => { spring.set(value) }, [value, spring])
+  useEffect(() => { if (smooth) spring.set(value); else spring.jump(value) }, [value, spring, smooth])
   const x2 = useTransform(spring, (v) => valueToPoint(cx, cy, r, v).x)
   const y2 = useTransform(spring, (v) => valueToPoint(cx, cy, r, v).y)
   return (

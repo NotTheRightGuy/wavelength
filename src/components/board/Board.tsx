@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useId, useRef } from 'react'
 import type { PointerEvent } from 'react'
 import { audio } from '@/lib/audio'
 import { pointToValue } from '@/lib/dial-geometry'
@@ -19,6 +19,7 @@ export interface BoardProps {
 }
 
 export function Board({ target, dial, onDialChange, interactive, showTarget, glow, ghostDials = [] }: BoardProps) {
+  const faceId = `face-${useId().replace(/:/g, '')}`
   const svg = useRef<SVGSVGElement>(null)
   const lastTick = useRef(Math.round(dial / 2))
 
@@ -47,7 +48,9 @@ export function Board({ target, dial, onDialChange, interactive, showTarget, glo
       viewBox="0 0 400 230"
       className="w-full max-w-xl touch-none select-none"
       role="slider"
-      aria-label="Dial"
+      aria-label={interactive ? 'Guess dial' : 'Dial position'}
+      aria-readonly={interactive ? undefined : true}
+      aria-valuetext={`Dial at ${Math.round(dial)} of 100`}
       aria-valuemin={0}
       aria-valuemax={100}
       aria-valuenow={Math.round(dial)}
@@ -58,20 +61,26 @@ export function Board({ target, dial, onDialChange, interactive, showTarget, glo
       onKeyDown={(e) => {
         if (!interactive) return
         const step = e.shiftKey ? 5 : 1
-        if (e.key === 'ArrowLeft') emit(dial - step)
-        if (e.key === 'ArrowRight') emit(dial + step)
+        let next: number | null = null
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') next = dial - step
+        else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') next = dial + step
+        else if (e.key === 'Home') next = 0
+        else if (e.key === 'End') next = 100
+        if (next === null) return
+        e.preventDefault()
+        emit(next)
       }}
     >
       <defs>
-        <radialGradient id="face" cx="50%" cy="100%" r="100%">
+        <radialGradient id={faceId} cx="50%" cy="100%" r="100%">
           <stop offset="0%" stopColor="#f7ecd0" />
           <stop offset="100%" stopColor="#e6d4a6" />
         </radialGradient>
       </defs>
-      <path d={`M ${CX - 180} ${CY} A 180 180 0 0 1 ${CX + 180} ${CY} Z`} fill="url(#face)" stroke="#0d6a73" strokeWidth={10} />
+      <path d={`M ${CX - 180} ${CY} A 180 180 0 0 1 ${CX + 180} ${CY} Z`} fill={`url(#${faceId})`} stroke="#0d6a73" strokeWidth={10} />
       {showTarget && target != null && <Wedges target={target} cx={CX} cy={CY} />}
       {ghostDials.map((g) => <Needle key={g.id} value={g.value} cx={CX} cy={CY} r={150} color={g.color} />)}
-      <Needle value={dial} cx={CX} cy={CY} r={165} glow={glow} />
+      <Needle value={dial} cx={CX} cy={CY} r={165} glow={glow} smooth={!interactive} />
     </svg>
   )
 }
