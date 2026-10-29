@@ -46,7 +46,7 @@ export function Board({ target, dial, onDialChange, interactive, showTarget, glo
     <svg
       ref={svg}
       viewBox="0 0 400 230"
-      className="w-full max-w-xl touch-none select-none"
+      className="w-full max-w-xl touch-none overflow-visible select-none"
       role="slider"
       aria-label={interactive ? 'Guess dial' : 'Dial position'}
       aria-readonly={interactive ? undefined : true}
@@ -73,11 +73,29 @@ export function Board({ target, dial, onDialChange, interactive, showTarget, glo
     >
       <defs>
         <radialGradient id={faceId} cx="50%" cy="100%" r="100%">
-          <stop offset="0%" stopColor="#f7ecd0" />
-          <stop offset="100%" stopColor="#e6d4a6" />
+          <stop offset="0%" stopColor="#fffaf0" />
+          <stop offset="70%" stopColor="#fcf2d8" />
+          <stop offset="100%" stopColor="#efdcab" />
         </radialGradient>
+        <linearGradient id={`${faceId}-rim`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#14938c" />
+          <stop offset="55%" stopColor="#0a6f6b" />
+          <stop offset="100%" stopColor="#054240" />
+        </linearGradient>
+        <filter id={`${faceId}-lift`} x="-10%" y="-10%" width="120%" height="130%">
+          <feDropShadow dx="0" dy="6" stdDeviation="6" floodColor="#02302e" floodOpacity="0.45" />
+        </filter>
       </defs>
-      <path d={`M ${CX - 180} ${CY} A 180 180 0 0 1 ${CX + 180} ${CY} Z`} fill={`url(#${faceId})`} stroke="#0d6a73" strokeWidth={10} />
+      {/* lacquered teal frame and base */}
+      <g filter={`url(#${faceId}-lift)`}>
+        <path d={`M ${CX - 192} ${CY + 2} A 192 192 0 0 1 ${CX + 192} ${CY + 2} L ${CX + 192} ${CY + 12} Q ${CX + 192} ${CY + 18} ${CX + 186} ${CY + 18} L ${CX - 186} ${CY + 18} Q ${CX - 192} ${CY + 18} ${CX - 192} ${CY + 12} Z`} fill={`url(#${faceId}-rim)`} />
+      </g>
+      <path d={`M ${CX - 186} ${CY + 1} A 186 186 0 0 1 ${CX + 186} ${CY + 1}`} fill="none" stroke="#ffffff" strokeOpacity={0.18} strokeWidth={2} />
+      {/* cream cardstock face with printed ticks */}
+      <path d={`M ${CX - 178} ${CY} A 178 178 0 0 1 ${CX + 178} ${CY} Z`} fill={`url(#${faceId})`} />
+      {Array.from({ length: 21 }, (_, i) => (
+        <line key={i} x1={CX} y1={CY - 176} x2={CX} y2={CY - (i % 5 === 0 ? 160 : 166)} stroke="#10302d" strokeOpacity={i % 5 === 0 ? 0.5 : 0.28} strokeWidth={i % 5 === 0 ? 3 : 2} strokeLinecap="round" transform={`rotate(${-90 + i * 9} ${CX} ${CY})`} />
+      ))}
       {showTarget && target != null && <Wedges target={target} cx={CX} cy={CY} />}
       {ghostDials.map((g) => <Needle key={g.id} value={g.value} cx={CX} cy={CY} r={150} color={g.color} />)}
       <Needle value={dial} cx={CX} cy={CY} r={165} glow={glow} smooth={!interactive} />

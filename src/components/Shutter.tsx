@@ -28,12 +28,33 @@ export function Shutter({ closed, children }: { closed: boolean; children: React
   const pe = closed ? '' : 'pointer-events-none'
 
   return (
-    <div className="relative overflow-hidden rounded-xl">
+    <div className="relative overflow-hidden rounded-card">
       {children}
-      <motion.div aria-hidden="true" className={`absolute inset-y-0 left-0 w-1/2 bg-teal-800 border-r-4 border-teal-950 ${pe}`}
-        initial={false} animate={reduced ? { opacity: closed ? 1 : 0, x: '0%' } : { opacity: 1, x: closed ? '0%' : '-105%' }} transition={transition} />
-      <motion.div aria-hidden="true" className={`absolute inset-y-0 right-0 w-1/2 bg-teal-800 border-l-4 border-teal-950 ${pe}`}
-        initial={false} animate={reduced ? { opacity: closed ? 1 : 0, x: '0%' } : { opacity: 1, x: closed ? '0%' : '105%' }} transition={transition} />
+      <motion.div aria-hidden="true" className={`absolute inset-y-0 left-0 w-1/2 ${PLATE} rounded-r-sm shadow-[inset_-3px_0_4px_rgb(2_38_36/0.5)] ${pe}`}
+        initial={false} animate={reduced ? { opacity: closed ? 1 : 0, x: '0%' } : { opacity: 1, x: closed ? '0%' : '-105%' }} transition={transition}>
+        <Rivets side="left" />
+      </motion.div>
+      <motion.div aria-hidden="true" className={`absolute inset-y-0 right-0 w-1/2 ${PLATE} rounded-l-sm shadow-[inset_3px_0_4px_rgb(2_38_36/0.5)] ${pe}`}
+        initial={false} animate={reduced ? { opacity: closed ? 1 : 0, x: '0%' } : { opacity: 1, x: closed ? '0%' : '105%' }} transition={transition}>
+        <Rivets side="right" />
+      </motion.div>
     </div>
+  )
+}
+
+// Teal lacquer plate with fine horizontal grooves and a lamp sheen.
+const PLATE =
+  'bg-table [background-image:linear-gradient(to_bottom,rgb(255_255_255/0.14),transparent_40%,rgb(2_38_36/0.25)),repeating-linear-gradient(to_bottom,transparent_0_14px,rgb(2_38_36/0.18)_14px_16px,rgb(255_255_255/0.06)_16px_17px)]'
+
+function Rivets({ side }: { side: 'left' | 'right' }) {
+  const x = side === 'left' ? 'left-3' : 'right-3'
+  const seam = side === 'left' ? 'right-0 border-r-2' : 'left-0 border-l-2'
+  return (
+    <>
+      <span className={`absolute inset-y-0 ${seam} border-table-shade/60`} />
+      {['top-3', 'bottom-3'].map((y) => (
+        <span key={y} className={`absolute ${x} ${y} size-3 rounded-full bg-[radial-gradient(circle_at_35%_30%,#d4f0ea,#7fb5ad_55%,#054240)] shadow-[0_1px_2px_rgb(2_38_36/0.6)]`} />
+      ))}
+    </>
   )
 }

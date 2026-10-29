@@ -1,7 +1,9 @@
 import { StrictMode, useCallback, useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
+import { RotateCwIcon } from 'lucide-react'
 import './index.css'
 import App from './App.tsx'
+import { Cardstock, DialEmblem, GameHeading, PlasticButton } from './components/game'
 import { ensureSession } from './lib/supabase'
 
 function Boot() {
@@ -21,19 +23,22 @@ function Boot() {
 
   if (status === 'ready') return <App />
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-teal-800 p-6 text-center text-[#f7ecd0]">
+    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center gap-6 px-4 py-10 text-center">
+      <DialEmblem className="w-40" />
       {status === 'loading' ? (
-        <p className="text-lg font-bold">Connecting…</p>
+        <p role="status" className="font-display text-subheading text-on-table">Connecting…</p>
       ) : (
-        <>
-          <p className="text-lg font-bold">Could not connect</p>
-          <p className="text-sm opacity-80">{message}</p>
-          <button onClick={connect} className="h-12 rounded-2xl bg-orange-500 px-6 font-extrabold text-white shadow-[0_4px_0_0_#9a3412]">
+        <Cardstock pattern padding="lg" className="flex w-full flex-col items-center gap-3" role="alert">
+          <GameHeading level={1} size="heading" tone="card">Could not connect</GameHeading>
+          <p className="text-base break-words text-ink-soft">{message}</p>
+          <p className="text-base text-ink-soft">Check your connection, then try again.</p>
+          <PlasticButton size="lg" block onClick={connect} className="mt-2">
+            <RotateCwIcon />
             Retry
-          </button>
-        </>
+          </PlasticButton>
+        </Cardstock>
       )}
-    </div>
+    </main>
   )
 }
 

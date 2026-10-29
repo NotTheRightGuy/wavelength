@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils'
 
 const REST = 14 // degrees right of upright
 
-/** The Dialed mark: a half-dial with scoring wedges and a red needle that swings on a spring. Tap or hover to wobble it. */
+/** The Dialed mark (pass title="" when a visible wordmark sits next to it): a half-dial with scoring wedges and a red needle that swings on a spring. Tap or hover to wobble it. */
 export function DialEmblem({ className, title = 'Dialed', swing = true }: { className?: string; title?: string; swing?: boolean }) {
   const id = useId().replace(/:/g, '')
   const rot = useMotionValue(swing && !prefersReducedMotion() ? -62 : REST)
@@ -25,8 +25,9 @@ export function DialEmblem({ className, title = 'Dialed', swing = true }: { clas
   return (
     <svg
       viewBox="0 0 240 140"
-      role="img"
-      aria-label={title}
+      role={title ? 'img' : undefined}
+      aria-label={title || undefined}
+      aria-hidden={title ? undefined : true}
       className={cn('overflow-visible', className)}
       onPointerEnter={(e) => { if (e.pointerType === 'mouse') wobble() }}
       onPointerDown={() => wobble()}

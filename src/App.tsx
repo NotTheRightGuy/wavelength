@@ -8,8 +8,8 @@ import ScreenView from '@/screens/ScreenView'
 export default function App() {
   return (
     <BrowserRouter>
-      <div className="min-h-dvh bg-teal-800 font-sans text-[#f7ecd0]">
-        <div className="fixed top-2 right-2 z-40 text-[#f7ecd0] [&_button]:hover:bg-teal-700 [&_button]:hover:text-white">
+      <div className="min-h-dvh font-sans text-on-table">
+        <div className="fixed top-3 right-3 z-40">
           <SettingsSheet />
         </div>
         <Routes>

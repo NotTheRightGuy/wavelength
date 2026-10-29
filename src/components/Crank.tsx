@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { audio } from '@/lib/audio'
 import { CLICK_STEP, GEAR_RATIO, clicksCrossed, unwrapDelta } from '@/lib/crank'
 import { haptics, prefersReducedMotion } from '@/lib/haptics'
+import { PlasticButton } from './game'
 import { SpinWheel } from './SpinWheel'
 
 const DEG = 180 / Math.PI
@@ -139,13 +140,19 @@ export function Crank({ onDone, onProgress, minTurns = 2 }: {
   return (
     <div className="flex flex-col items-center gap-4">
       <SpinWheel angle={wheel} />
-      <div ref={track} className="relative size-40 rounded-full border-8 border-teal-800 bg-teal-950/40 touch-none"
+      <div ref={track} className="relative size-40 touch-none rounded-full bg-table-deep shadow-[inset_0_4px_8px_rgb(2_38_36/0.6),inset_0_-2px_2px_rgb(255_255_255/0.12),0_1px_0_rgb(255_255_255/0.15)]"
         onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp} data-testid="crank-track">
-        <div className="absolute size-12 rounded-full bg-orange-500 shadow-lg border-4 border-orange-700 pointer-events-none"
+        {/* groove the handle runs in */}
+        <div className="pointer-events-none absolute inset-[22px] rounded-full border-[3px] border-dashed border-table-hi/50" />
+        {/* crank arm from the hub to the handle */}
+        <div className="pointer-events-none absolute top-1/2 left-1/2 h-4 w-[60px] origin-left -translate-y-1/2 rounded-full bg-plastic-orange-lip shadow-[0_2px_3px_rgb(2_38_36/0.5)]"
+          style={{ transform: `translateY(-50%) rotate(${knob}rad)` }} />
+        <div className="pointer-events-none absolute top-1/2 left-1/2 size-9 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle_at_38%_30%,#ffd9bd,var(--plastic-orange)_50%,var(--plastic-orange-lip))] shadow-lift-1" />
+        <div className="pointer-events-none absolute size-12 rounded-full bg-[radial-gradient(circle_at_36%_28%,#ffd2b0,var(--plastic-orange)_45%,var(--plastic-orange-lip))] shadow-[inset_0_-3px_0_rgb(110_34_0/0.35),0_3px_4px_rgb(2_38_36/0.45),0_10px_16px_-4px_rgb(2_38_36/0.5)]"
           style={{ left: `calc(50% + ${Math.cos(knob) * 56}px - 24px)`, top: `calc(50% + ${Math.sin(knob) * 56}px - 24px)` }} />
-        <div className="absolute inset-0 grid place-items-center text-xs text-teal-100/70 pointer-events-none">Crank me</div>
       </div>
-      <button type="button" className="text-sm underline" onClick={autoSpin} data-testid="spin-for-me">Spin for me</button>
+      <p className="font-display text-subheading text-on-table">Crank me</p>
+      <PlasticButton type="button" variant="quiet" size="sm" onClick={autoSpin} data-testid="spin-for-me">Spin for me</PlasticButton>
     </div>
   )
 }

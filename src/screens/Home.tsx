@@ -1,17 +1,16 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
-import { Button } from '@/components/ui/button'
+import { Cardstock, DialEmblem, GameHeading, PlasticButton, RoomCodeTiles } from '@/components/game'
 import { Input } from '@/components/ui/input'
 import { api } from '@/lib/api'
 import { normalizeCode } from '@/lib/room-code'
-import { btnCream, btnPrimary, fieldInput, plate } from '@/lib/ui-classes'
-import { cn } from '@/lib/utils'
 
 export default function Home() {
   const navigate = useNavigate()
   const [pending, setPending] = useState(false)
   const [code, setCode] = useState('')
+  const [focused, setFocused] = useState(false)
 
   async function create(mode: 'teams' | 'free') {
     setPending(true)
@@ -37,55 +36,68 @@ export default function Home() {
   }
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center gap-7 px-5 py-12">
-      <header className="text-center">
-        <h1 className="text-7xl font-black tracking-tight text-[#f7ecd0] drop-shadow-[0_4px_0_#042f2e]">Dialed</h1>
-        <p className="mt-2 text-base font-semibold text-teal-100/80">Read minds. Turn the dial. Land the needle.</p>
+    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-6 px-4 pt-14 pb-8">
+      <header className="flex flex-col items-center text-center">
+        <DialEmblem className="w-44 sm:w-52" title="" />
+        <h1 className="-mt-1 font-display text-display text-on-table [text-shadow:0_3px_2px_rgb(2_38_36/0.45),0_10px_24px_rgb(2_38_36/0.4)]">
+          Dialed
+        </h1>
+        <p className="mt-3 text-label font-semibold text-on-table-soft">Read minds. Turn the dial. Land the needle.</p>
       </header>
 
-      <section className={plate}>
-        <h2 className="mb-3 text-sm font-extrabold tracking-widest text-teal-800 uppercase">Host a game</h2>
-        <div className="flex flex-col gap-4">
-          <div>
-            <Button data-testid="create-teams" disabled={pending} onClick={() => create('teams')} className={btnPrimary}>
-              Teams
-            </Button>
-            <p className="mt-2 text-center text-sm text-teal-900/70">2 to 6 teams, one device per team</p>
+      <div className="mt-auto flex flex-col gap-6">
+        <Cardstock
+          as="form"
+          pattern
+          className="flex flex-col gap-4"
+          aria-labelledby="join-heading"
+          onSubmit={(e) => {
+            e.preventDefault()
+            if (code.length === 4 && !pending) join()
+          }}
+        >
+          <GameHeading id="join-heading" level={2} size="subheading" tone="card" className="text-center">
+            Join with a code
+          </GameHeading>
+          <div className="relative mx-auto">
+            <RoomCodeTiles code={code} size="md" caret={focused && code.length < 4 ? code.length : undefined} aria-hidden="true" className={focused ? '[&>span]:outline-3 [&>span]:outline-offset-2 [&>span]:outline-plastic-cobalt/40' : undefined} />
+            <Input
+              data-testid="join-code"
+              aria-label="Room code"
+              value={code}
+              onChange={(e) => setCode(normalizeCode(e.target.value))}
+              onFocus={() => setFocused(true)}
+              onBlur={() => setFocused(false)}
+              maxLength={4}
+              placeholder="CODE"
+              autoCapitalize="characters"
+              autoCorrect="off"
+              autoComplete="off"
+              spellCheck={false}
+              className="absolute inset-0 h-full cursor-text border-0 bg-transparent text-transparent caret-transparent opacity-0 shadow-none selection:bg-transparent focus-visible:outline-none"
+            />
           </div>
-          <div>
-            <Button data-testid="create-free" disabled={pending} onClick={() => create('free')} className={cn(btnPrimary, 'bg-teal-700 shadow-[0_5px_0_0_#042f2e] hover:bg-teal-700 active:shadow-[0_2px_0_0_#042f2e]')}>
-              Free play
-            </Button>
-            <p className="mt-2 text-center text-sm text-teal-900/70">3 to 12 players, everyone on their own phone</p>
-          </div>
-        </div>
-      </section>
+          <PlasticButton data-testid="join-btn" type="submit" variant="tertiary" size="lg" block loading={pending && code.length === 4} disabled={pending || code.length !== 4}>
+            Join game
+          </PlasticButton>
+        </Cardstock>
 
-      <form
-        className={plate}
-        onSubmit={(e) => {
-          e.preventDefault()
-          if (code.length === 4 && !pending) join()
-        }}
-      >
-        <h2 className="mb-3 text-sm font-extrabold tracking-widest text-teal-800 uppercase">Join a game</h2>
-        <Input
-          data-testid="join-code"
-          aria-label="Room code"
-          value={code}
-          onChange={(e) => setCode(normalizeCode(e.target.value))}
-          maxLength={4}
-          placeholder="CODE"
-          autoCapitalize="characters"
-          autoCorrect="off"
-          autoComplete="off"
-          spellCheck={false}
-          className={cn(fieldInput, 'h-16 text-center text-3xl font-black tracking-[0.4em] uppercase md:text-3xl')}
-        />
-        <Button data-testid="join-btn" type="submit" disabled={pending || code.length !== 4} className={cn(btnCream, 'mt-4 bg-teal-800 text-[#f7ecd0] shadow-[0_5px_0_0_#042f2e] hover:bg-teal-800 active:shadow-[0_2px_0_0_#042f2e]')}>
-          Join
-        </Button>
-      </form>
+        <section aria-labelledby="host-heading" className="flex flex-col gap-3">
+          <GameHeading id="host-heading" level={2} size="subheading" className="text-center">
+            Host a game
+          </GameHeading>
+          <div className="grid grid-cols-2 gap-3">
+            <PlasticButton data-testid="create-teams" disabled={pending} onClick={() => create('teams')} className="h-auto flex-col gap-0 px-3 pt-3 pb-[calc(var(--lip)+0.75rem)] whitespace-normal">
+              <span className="font-display text-heading font-normal">Teams</span>
+              <span className="text-[1.1875rem] leading-tight font-extrabold">2 to 6 teams, a phone each</span>
+            </PlasticButton>
+            <PlasticButton data-testid="create-free" variant="secondary" disabled={pending} onClick={() => create('free')} className="h-auto flex-col gap-0 px-3 pt-3 pb-[calc(var(--lip)+0.75rem)] whitespace-normal">
+              <span className="font-display text-heading font-normal">Free play</span>
+              <span className="text-[1.1875rem] leading-tight font-extrabold">3 to 12 players, own phones</span>
+            </PlasticButton>
+          </div>
+        </section>
+      </div>
     </main>
   )
 }

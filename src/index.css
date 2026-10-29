@@ -227,7 +227,7 @@
 
   /* Candy plastic piece: glossy top, bottom lip, soft layered shadow, squash on press. */
   .plastic {
-    --lip: 6px;
+    --lip: var(--lip-rest, 6px);
     --pc: var(--plastic-orange);
     --pc-lip: var(--plastic-orange-lip);
     --pc-ink: #ffffff;

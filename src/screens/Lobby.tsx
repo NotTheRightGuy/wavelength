@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react'
-import { MinusIcon, PlusIcon, XIcon } from 'lucide-react'
+import { Collapsible } from '@base-ui/react/collapsible'
+import { CheckIcon, ChevronDownIcon, MinusIcon, MonitorIcon, PencilIcon, PlusIcon, XIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import { QrJoin } from '@/components/QrJoin'
-import { Button } from '@/components/ui/button'
+import { Cardstock, GameHeading, PlasticButton, RoomCodeTiles, TeamToken, seatColorName, ui } from '@/components/game'
 import { Input } from '@/components/ui/input'
 import { api } from '@/lib/api'
 import { SEAT_COLORS } from '@/lib/seat-colors'
 import type { Mode, RoomState, SeatView } from '@/lib/types'
-import { btnPrimary, btnSmall, fieldInput, plate } from '@/lib/ui-classes'
 import { cn } from '@/lib/utils'
 
 const TIMERS: { label: string; value: number | null }[] = [
@@ -22,11 +22,11 @@ function minSeats(mode: Mode) {
 }
 
 function Heading({ children }: { children: React.ReactNode }) {
-  return <h2 className="mb-3 text-sm font-extrabold tracking-widest text-teal-800 uppercase">{children}</h2>
-}
-
-function ColorChip({ color, className }: { color: string; className?: string }) {
-  return <span className={cn('inline-block size-5 shrink-0 rounded-full border-2 border-white shadow-[0_0_0_2px_rgba(4,47,46,0.35)]', className)} style={{ backgroundColor: color }} />
+  return (
+    <GameHeading level={2} size="subheading" tone="card" className="mb-4">
+      {children}
+    </GameHeading>
+  )
 }
 
 function SeatForm({
@@ -79,15 +79,15 @@ function SeatForm({
         if (valid && !pending) onSubmit(name.trim(), effectiveColor, mode === 'free' ? [name.trim()] : allMembers)
       }}
     >
-      <label className="flex flex-col gap-1.5 text-sm font-bold text-teal-900">
+      <label className={ui.fieldLabel}>
         {mode === 'teams' ? 'Team name' : 'Your name'}
-        <Input data-testid="seat-name" value={name} onChange={(e) => setName(e.target.value)} maxLength={24} placeholder={mode === 'teams' ? 'e.g. Red' : 'e.g. Sam'} className={fieldInput} autoComplete="off" />
+        <Input data-testid="seat-name" value={name} onChange={(e) => setName(e.target.value)} maxLength={24} placeholder={mode === 'teams' ? 'e.g. Red' : 'e.g. Sam'} autoComplete="off" />
       </label>
 
       {showColor && (
-        <div className="flex flex-col gap-1.5">
-          <span className="text-sm font-bold text-teal-900">Colour</span>
-          <div className="flex flex-wrap gap-3" role="radiogroup" aria-label="Colour">
+        <div className="flex flex-col gap-2">
+          <span className="text-label font-bold">Colour</span>
+          <div className="flex flex-wrap gap-3.5 py-1" role="radiogroup" aria-label="Colour">
             {SEAT_COLORS.map((c) => {
               const free = isFree(c)
               const selected = c === effectiveColor
@@ -98,14 +98,18 @@ function SeatForm({
                   role="radio"
                   aria-checked={selected}
                   aria-label={c}
+                  title={seatColorName(c)}
                   disabled={!free}
                   onClick={() => setColor(c)}
                   className={cn(
-                    'size-11 rounded-full border-4 border-white shadow-[0_0_0_2px_rgba(4,47,46,0.35)] transition-transform disabled:opacity-25',
-                    selected && 'scale-110 shadow-[0_0_0_4px_#f97316]',
+                    'grid size-12 place-items-center rounded-full transition-transform duration-300 ease-spring disabled:cursor-not-allowed disabled:opacity-30 disabled:saturate-50 motion-reduce:transition-none',
+                    selected ? '-translate-y-1 scale-110' : 'hover:-translate-y-0.5',
                   )}
-                  style={{ backgroundColor: c }}
-                />
+                >
+                  <TeamToken color={c} size="md" initial="">
+                    {selected ? <CheckIcon className="size-6 stroke-[3]" /> : !free ? <XIcon className="size-5 stroke-[3]" /> : ''}
+                  </TeamToken>
+                </button>
               )
             })}
           </div>
@@ -114,14 +118,15 @@ function SeatForm({
 
       {mode === 'teams' && (
         <div className="flex flex-col gap-2">
-          <span className="text-sm font-bold text-teal-900">Team members (they take turns as psychic)</span>
+          <span className="text-label font-bold">Team members</span>
+          <span className="-mt-1 text-base text-ink-soft">They take turns as the psychic.</span>
           {members.length > 0 && (
             <ul className="flex flex-wrap gap-2">
               {members.map((m, i) => (
-                <li key={`${m}-${i}`} className="flex items-center gap-1 rounded-full bg-teal-800 py-1 pr-1 pl-3 text-sm font-bold text-[#f7ecd0]">
+                <li key={`${m}-${i}`} className="flex items-center gap-1 rounded-full bg-table py-1 pr-1 pl-4 text-base font-bold text-on-table shadow-lift-1">
                   {m}
-                  <button type="button" aria-label={`Remove ${m}`} onClick={() => setMembers(members.filter((_, j) => j !== i))} className="flex size-6 items-center justify-center rounded-full hover:bg-teal-600">
-                    <XIcon className="size-3.5" />
+                  <button type="button" aria-label={`Remove ${m}`} onClick={() => setMembers(members.filter((_, j) => j !== i))} className="flex size-9 items-center justify-center rounded-full transition-colors hover:bg-table-hi">
+                    <XIcon className="size-4 stroke-[2.5]" />
                   </button>
                 </li>
               ))}
@@ -141,25 +146,25 @@ function SeatForm({
               }}
               maxLength={24}
               placeholder="Add a member name"
-              className={fieldInput}
               autoComplete="off"
             />
-            <Button type="button" data-testid="add-member" onClick={addMember} disabled={!draft.trim()} className={cn(btnSmall, 'h-12 px-4')}>
+            <PlasticButton type="button" data-testid="add-member" variant="tertiary" size="lg" onClick={addMember} disabled={!draft.trim()} className="px-5">
+              <PlusIcon />
               Add
-            </Button>
+            </PlasticButton>
           </div>
         </div>
       )}
 
-      <div className="flex gap-3">
+      <div className="mt-1 flex gap-3">
         {onCancel && (
-          <Button type="button" onClick={onCancel} className={cn(btnSmall, 'h-14 bg-teal-900/15 text-teal-900 shadow-none hover:bg-teal-900/25')}>
+          <PlasticButton type="button" variant="quiet" size="lg" onClick={onCancel}>
             Cancel
-          </Button>
+          </PlasticButton>
         )}
-        <Button data-testid="claim-seat" type="submit" disabled={!valid || pending} className={btnPrimary}>
+        <PlasticButton data-testid="claim-seat" type="submit" size="lg" block loading={pending} disabled={!valid || pending} className="flex-1">
           {submitLabel}
-        </Button>
+        </PlasticButton>
       </div>
     </form>
   )
@@ -183,24 +188,25 @@ function SeatRow({
   onEdit: () => void
 }) {
   return (
-    <li data-testid="seat-row" className="flex items-center gap-3 rounded-2xl border-2 border-teal-800/15 bg-white/70 px-3 py-2.5">
-      <ColorChip color={seat.color} className="size-7" />
+    <li data-testid="seat-row" className="flex items-center gap-3 py-3 not-first:border-t-2 not-first:border-dashed not-first:border-card-edge/80">
+      <TeamToken color={seat.color} name={seat.name} size="lg" />
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <span className="truncate text-base font-extrabold">{seat.name}</span>
-          {mine && <span className="rounded-full bg-orange-500 px-2 py-0.5 text-[0.65rem] font-extrabold text-white uppercase">You</span>}
+          <span className="truncate text-xl font-extrabold">{seat.name}</span>
+          {mine && <span className="shrink-0 rounded-full bg-plastic-yellow px-2.5 py-0.5 text-base leading-snug font-extrabold text-[#3a2600] shadow-lift-1">You</span>}
         </div>
-        {mode === 'teams' && <p className="truncate text-sm text-teal-900/70">{seat.members.length ? seat.members.join(', ') : 'No members yet'}</p>}
+        {mode === 'teams' && <p className="truncate text-base text-ink-soft">{seat.members.length ? seat.members.join(', ') : 'No members yet'}</p>}
       </div>
       {mine && (
-        <Button type="button" onClick={onEdit} className="h-9 rounded-lg bg-teal-900/10 px-3 text-sm font-bold text-teal-900 hover:bg-teal-900/20">
+        <PlasticButton type="button" variant="quiet" size="sm" onClick={onEdit}>
+          <PencilIcon />
           Edit
-        </Button>
+        </PlasticButton>
       )}
       {canKick && (
-        <Button type="button" data-testid="kick-seat" aria-label={`Kick ${seat.name}`} disabled={pending} onClick={onKick} className="size-9 rounded-lg bg-red-600/10 p-0 text-red-700 hover:bg-red-600/20">
-          <XIcon className="size-4" />
-        </Button>
+        <PlasticButton type="button" data-testid="kick-seat" variant="danger" size="icon-sm" aria-label={`Kick ${seat.name}`} disabled={pending} onClick={onKick}>
+          <XIcon />
+        </PlasticButton>
       )}
     </li>
   )
@@ -209,15 +215,15 @@ function SeatRow({
 function Stepper({ label, value, min, max, disabled, onChange }: { label: string; value: number; min: number; max: number; disabled: boolean; onChange: (v: number) => void }) {
   return (
     <div className="flex items-center justify-between gap-3">
-      <span className="text-base font-bold">{label}</span>
-      <div className="flex items-center gap-3">
-        <Button type="button" aria-label={`Decrease ${label}`} disabled={disabled || value <= min} onClick={() => onChange(value - 1)} className={cn(btnSmall, 'size-11 p-0')}>
+      <span className="text-label font-bold">{label}</span>
+      <div className="flex items-center gap-2">
+        <PlasticButton type="button" variant="tertiary" size="icon-sm" aria-label={`Decrease ${label}`} disabled={disabled || value <= min} onClick={() => onChange(value - 1)}>
           <MinusIcon />
-        </Button>
-        <span data-testid="setting-value" className="w-8 text-center text-2xl font-black tabular-nums">{value}</span>
-        <Button type="button" aria-label={`Increase ${label}`} disabled={disabled || value >= max} onClick={() => onChange(value + 1)} className={cn(btnSmall, 'size-11 p-0')}>
+        </PlasticButton>
+        <span data-testid="setting-value" className="w-12 text-center font-display text-heading tabular-nums">{value}</span>
+        <PlasticButton type="button" variant="tertiary" size="icon-sm" aria-label={`Increase ${label}`} disabled={disabled || value >= max} onClick={() => onChange(value + 1)}>
           <PlusIcon />
-        </Button>
+        </PlasticButton>
       </div>
     </div>
   )
@@ -247,37 +253,48 @@ function HostSettings({ state, refresh }: { state: RoomState; refresh: () => voi
   }
 
   return (
-    <section className={plate} data-testid="host-settings">
-      <Heading>Game settings</Heading>
-      <div className="flex flex-col gap-4">
+    <Cardstock data-testid="host-settings" padding="none">
+      <Collapsible.Root defaultOpen>
+        <Collapsible.Trigger className="group/trigger flex w-full items-center justify-between gap-3 rounded-card px-5 py-4 text-left">
+          <GameHeading level={2} size="subheading" tone="card">Game settings</GameHeading>
+          <span className="grid size-10 place-items-center rounded-full bg-cardstock-deep text-ink shadow-lift-1 transition-transform duration-300 ease-spring group-data-panel-open/trigger:rotate-180 motion-reduce:transition-none">
+            <ChevronDownIcon className="size-6 stroke-[2.5]" aria-hidden="true" />
+          </span>
+        </Collapsible.Trigger>
+        <Collapsible.Panel className="h-[var(--collapsible-panel-height)] overflow-hidden transition-[height] duration-300 ease-out-expo data-ending-style:h-0 data-starting-style:h-0 motion-reduce:transition-none">
+      <div className="flex flex-col gap-5 border-t-2 border-dashed border-card-edge/80 px-5 pt-4 pb-5">
         {room.mode === 'teams' ? (
           <Stepper label="Winning score" value={vals.winning} min={5} max={20} disabled={false} onChange={(v) => save({ winning: v })} />
         ) : (
           <Stepper label="Laps" value={vals.laps} min={1} max={5} disabled={false} onChange={(v) => save({ laps: v })} />
         )}
         <div className="flex flex-col gap-2">
-          <span className="text-base font-bold">Dial timer (seconds)</span>
+          <span className="text-label font-bold">Dial timer (seconds)</span>
           <div className="grid grid-cols-4 gap-2" role="radiogroup" aria-label="Dial timer">
             {TIMERS.map((t) => {
               const on = vals.timer === t.value
               return (
-                <Button
+                <PlasticButton
                   key={t.label}
                   type="button"
                   role="radio"
                   aria-checked={on}
+                  variant={on ? 'primary' : 'quiet'}
+                  size="sm"
                   onClick={() => save({ timer: t.value })}
-                  className={cn('h-11 rounded-xl text-base font-extrabold', on ? 'bg-orange-500 text-white shadow-[0_3px_0_0_#9a3412]' : 'bg-teal-900/10 text-teal-900 hover:bg-teal-900/20')}
+                  className="h-12 px-0 text-label tabular-nums"
                 >
                   {t.label}
-                </Button>
+                </PlasticButton>
               )
             })}
           </div>
         </div>
       </div>
+        </Collapsible.Panel>
+      </Collapsible.Root>
       {pending && <span className="sr-only">Saving</span>}
-    </section>
+    </Cardstock>
   )
 }
 
@@ -321,30 +338,36 @@ export default function Lobby({ state, refresh }: { state: RoomState; refresh: (
   const max = room.mode === 'teams' ? 6 : 12
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-5 px-4 pt-12 pb-10">
-      <section className={cn(plate, 'flex items-center gap-4')}>
-        <div className="min-w-0 flex-1">
-          <p className="text-xs font-extrabold tracking-widest text-teal-800 uppercase">Room code</p>
-          <p data-testid="room-code" aria-label={`Room code ${room.code}`} className="mt-1 text-6xl leading-none font-black tracking-[0.12em] text-teal-900">
-            {room.code}
-          </p>
-          <p className="mt-2 text-sm font-semibold text-teal-900/70">{room.mode === 'teams' ? 'Team game' : 'Free play'}. Scan or type the code to join.</p>
-        </div>
+    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-6 px-4 pt-16 pb-0">
+      <header className="flex flex-col items-center gap-4 text-center">
+        <GameHeading level={1} size="title">{room.mode === 'teams' ? 'Team game' : 'Free play'}</GameHeading>
+        <RoomCodeTiles data-testid="room-code" aria-label={`Room code ${room.code}`} role="img" code={room.code} size="xl" flipIn />
+      </header>
+
+      <Cardstock pattern className="flex items-center gap-4">
         <QrJoin code={room.code} />
-      </section>
+        <div className="flex min-w-0 flex-1 flex-col gap-3">
+          <p className="text-label leading-snug font-bold">Scan the code or type the letters on the home screen to join.</p>
+          <a href={`/screen/${room.code}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-md text-base font-bold text-plastic-cobalt underline hover:text-plastic-cobalt-lip">
+            <MonitorIcon className="size-5 shrink-0 stroke-[2.5]" aria-hidden="true" />
+            Open shared screen
+          </a>
+        </div>
+      </Cardstock>
 
-      <a href={`/screen/${room.code}`} target="_blank" rel="noreferrer" className="text-center text-sm font-bold text-[#f7ecd0] underline underline-offset-4">
-        Open shared screen (for a TV or laptop)
-      </a>
-
-      <section className={plate}>
+      <Cardstock>
         <Heading>
-          {unit} ({seats.length}/{max})
+          {unit} <span className="tabular-nums">({seats.length}/{max})</span>
         </Heading>
         {seats.length === 0 ? (
-          <p className="py-2 text-center text-sm text-teal-900/70">Nobody has taken a seat yet.</p>
+          <div className="flex items-center gap-4 py-2 text-ink-soft">
+            <div className="flex -space-x-2" aria-hidden="true">
+              {Array.from({ length: min }, (_, i) => <TeamToken key={i} color="" empty size="lg" />)}
+            </div>
+            <p className="text-base">Nobody has taken a seat yet.</p>
+          </div>
         ) : (
-          <ul data-testid="seat-list" className="flex flex-col gap-2">
+          <ul data-testid="seat-list" className="flex flex-col">
             {seats.map((s) => (
               <SeatRow
                 key={s.id}
@@ -359,10 +382,10 @@ export default function Lobby({ state, refresh }: { state: RoomState; refresh: (
             ))}
           </ul>
         )}
-      </section>
+      </Cardstock>
 
       {!my_seat && (
-        <section className={plate}>
+        <Cardstock pattern>
           <Heading>{room.mode === 'teams' ? 'Claim a team seat' : 'Take a seat'}</Heading>
           <SeatForm
             mode={room.mode}
@@ -372,11 +395,11 @@ export default function Lobby({ state, refresh }: { state: RoomState; refresh: (
             pending={pending}
             onSubmit={(name, color, members) => run(() => api.joinRoom(room.code, name, color, members))}
           />
-        </section>
+        </Cardstock>
       )}
 
       {mySeat && editing && (
-        <section className={plate}>
+        <Cardstock pattern>
           <Heading>Edit your seat</Heading>
           <SeatForm
             mode={room.mode}
@@ -391,21 +414,23 @@ export default function Lobby({ state, refresh }: { state: RoomState; refresh: (
               if (await run(() => api.updateSeat(mySeat.id, name, members))) setEditing(false)
             }}
           />
-        </section>
+        </Cardstock>
       )}
 
       {is_host && <HostSettings state={state} refresh={refresh} />}
 
-      {is_host ? (
-        <div className="flex flex-col gap-2">
-          <Button data-testid="start-game" disabled={!canStart || pending} onClick={() => run(() => api.startGame(room.id))} className={btnPrimary}>
-            Start game
-          </Button>
-          {hint && <p className="text-center text-sm font-semibold text-teal-100/80">{hint}</p>}
-        </div>
-      ) : (
-        <p className="text-center text-base font-bold text-teal-100/90">Waiting for the host to start the game…</p>
-      )}
+      <div className="sticky bottom-0 z-10 -mx-4 mt-auto bg-[linear-gradient(to_bottom,transparent,var(--table)_28%)] px-4 pt-8 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
+        {is_host ? (
+          <div className="flex flex-col gap-3">
+            <PlasticButton data-testid="start-game" size="xl" block disabled={!canStart || pending} onClick={() => run(() => api.startGame(room.id))}>
+              Start game
+            </PlasticButton>
+            {hint && <p className="text-center text-base font-semibold text-on-table-soft">{hint}</p>}
+          </div>
+        ) : (
+          <p className="text-center font-display text-subheading text-on-table">Waiting for the host to start the game…</p>
+        )}
+      </div>
     </main>
   )
 }
