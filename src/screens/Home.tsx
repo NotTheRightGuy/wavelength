@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { Cardstock, DialEmblem, GameHeading, PlasticButton, RoomCodeTiles } from '@/components/game'
+import { Footer } from '@/components/Footer'
 import { Input } from '@/components/ui/input'
 import { api } from '@/lib/api'
 import { normalizeCode } from '@/lib/room-code'
@@ -97,6 +98,8 @@ export default function Home() {
             </PlasticButton>
           </div>
         </section>
+
+        <Footer className="mt-4" />
       </div>
     </main>
   )

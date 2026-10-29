@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Collapsible } from '@base-ui/react/collapsible'
 import { CheckIcon, ChevronDownIcon, MinusIcon, MonitorIcon, PencilIcon, PlusIcon, XIcon } from 'lucide-react'
 import { toast } from 'sonner'
+import { Footer } from '@/components/Footer'
 import { QrJoin } from '@/components/QrJoin'
 import { Cardstock, GameHeading, PlasticButton, RoomCodeTiles, TeamToken, seatColorName, ui } from '@/components/game'
 import { Input } from '@/components/ui/input'
@@ -439,6 +440,7 @@ export default function Lobby({ state, refresh }: { state: RoomState; refresh: (
           <p className="text-center font-display text-subheading text-on-table">Waiting for the host to start the game…</p>
         )}
       </div>
+      <Footer />
     </main>
   )
 }
