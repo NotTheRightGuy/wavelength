@@ -193,6 +193,7 @@ create function lock_dial(p_round uuid, p_dial numeric) returns void
 language plpgsql security definer set search_path = public as $$
 declare v rounds; r rooms; v_seat seats; v_needed int; v_locked int;
 begin
+  if p_dial is null then raise exception 'dial required'; end if;
   select * into v from rounds where id = p_round for update;
   if not found then raise exception 'round not found'; end if;
   select * into r from rooms where id = v.room_id;
@@ -219,6 +220,7 @@ create function lock_lr(p_round uuid, p_guess text) returns void
 language plpgsql security definer set search_path = public as $$
 declare v rounds; r rooms; v_seat seats; v_needed int; v_locked int;
 begin
+  if p_guess is null then raise exception 'guess required'; end if;
   select * into v from rounds where id = p_round for update;
   if not found then raise exception 'round not found'; end if;
   select * into r from rooms where id = v.room_id;
@@ -260,9 +262,11 @@ end $$;
 
 create function rematch(p_room uuid) returns void
 language plpgsql security definer set search_path = public as $$
-declare v_first uuid;
+declare v_first uuid; r rooms;
 begin
   perform _require_host(p_room);
+  select * into r from rooms where id = p_room for update;
+  if r.status <> 'finished' then raise exception 'rematch only after the game ends'; end if;
   delete from rounds where room_id = p_room;
   update seats set score = 0, turns_taken = 0 where room_id = p_room;
   select id into v_first from seats where room_id = p_room order by position limit 1;
