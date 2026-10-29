@@ -1,4 +1,4 @@
-import { ChevronLeftIcon, ChevronRightIcon, PauseIcon, PlayIcon } from 'lucide-react'
+import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
@@ -59,7 +59,7 @@ function Chip({ children, className }: { children: React.ReactNode; className?: 
  * The reveal ceremony: shutter opens, needle glows in the band colour, points chips fly to the scoreboard.
  * Tap anywhere to skip to the final state. The host sees Next turn and auto-advances 8 s after it completes.
  */
-export function Reveal({ state, viewOnly = false, wide = false, paused = false, onTogglePause }: {
+export function Reveal({ state, viewOnly = false, wide = false, paused = false }: {
   state: RoomState
   viewOnly?: boolean
   wide?: boolean
@@ -239,13 +239,7 @@ export function Reveal({ state, viewOnly = false, wide = false, paused = false, 
         </Cardstock>
 
         {state.is_host ? (
-          <div className="flex flex-col gap-2">
-            <PlasticButton data-testid="next-turn" size="xl" block loading={pending} onClick={next}>Next turn</PlasticButton>
-            <PlasticButton variant="quiet" size="md" block onClick={onTogglePause} disabled={!onTogglePause}>
-              {paused ? <PlayIcon /> : <PauseIcon />}
-              {paused ? 'Resume auto-next' : 'Pause auto-next'}
-            </PlasticButton>
-          </div>
+          <PlasticButton data-testid="next-turn" size="xl" block loading={pending} onClick={next}>Next turn</PlasticButton>
         ) : (
           !viewOnly && <p role="status" className="text-center text-lg text-on-table">Waiting for host…</p>
         )}

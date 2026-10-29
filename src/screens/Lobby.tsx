@@ -419,7 +419,15 @@ export default function Lobby({ state, refresh }: { state: RoomState; refresh: (
 
       {is_host && <HostSettings state={state} refresh={refresh} />}
 
-      <div className="sticky bottom-0 z-10 -mx-4 mt-auto bg-[linear-gradient(to_bottom,transparent,var(--table)_28%)] px-4 pt-8 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
+      {/* Stick the footer only when no form is open, so it never covers the claim/edit form. */}
+      <div
+        className={cn(
+          '-mx-4 mt-auto px-4 pt-8 pb-[max(1.25rem,env(safe-area-inset-bottom))]',
+          !my_seat || (mySeat && editing)
+            ? ''
+            : 'sticky bottom-0 z-10 bg-[linear-gradient(to_bottom,transparent,var(--table)_28%)]',
+        )}
+      >
         {is_host ? (
           <div className="flex flex-col gap-3">
             <PlasticButton data-testid="start-game" size="xl" block disabled={!canStart || pending} onClick={() => run(() => api.startGame(room.id))}>
