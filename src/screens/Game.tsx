@@ -1,6 +1,10 @@
+import { useState } from 'react'
 import { Board } from '@/components/board/Board'
 import { Shutter } from '@/components/Shutter'
+import { HostBar } from '@/components/HostBar'
 import { Scoreboard } from '@/components/Scoreboard'
+import { Cardstock, GameHeading } from '@/components/game'
+import { useHostTimerFallback } from '@/lib/use-host-timer-fallback'
 import { useNeedle } from '@/lib/use-needle'
 import type { RoomState } from '@/lib/types'
 import { CardLabels } from './phases/CardLabels'
@@ -24,6 +28,8 @@ function WatchBoard({ state }: { state: RoomState }) {
 
 export function Game({ state, refresh }: { state: RoomState; refresh: () => void }) {
   const { room, round, seats, my_seat } = state
+  const [paused, setPaused] = useState(false)
+  useHostTimerFallback(state)
   const finished = room.game.phase === 'finished' || room.status === 'finished'
 
   let body: React.ReactNode
@@ -76,7 +82,7 @@ export function Game({ state, refresh }: { state: RoomState; refresh: () => void
             : <LeftRight state={state} refresh={refresh} />
         break
       case 'reveal':
-        phase = <Reveal state={state} />
+        phase = <Reveal state={state} paused={paused} onTogglePause={() => setPaused((p) => !p)} />
         break
     }
     body = (
@@ -87,10 +93,20 @@ export function Game({ state, refresh }: { state: RoomState; refresh: () => void
     )
   }
 
+  const tiedNames = (room.game.sd_tied ?? []).map((id) => seats.find((s) => s.id === id)?.name).filter(Boolean)
+  const suddenDeath = room.game.phase === 'sudden_death' && !finished
+
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-4 px-4 py-4">
       <Scoreboard seats={seats} activeSeatId={finished ? null : round?.seat_id} mySeatId={my_seat} />
+      {suddenDeath && (
+        <Cardstock role="status" padding="sm" className="text-center">
+          <GameHeading level={2} size="subheading" tone="card">Sudden death</GameHeading>
+          {tiedNames.length > 0 && <p className="text-lg text-ink-soft">{tiedNames.join(' and ')} are tied</p>}
+        </Cardstock>
+      )}
       <div key={round?.id} className="flex flex-col gap-4">{body}</div>
+      <div className="mt-auto"><HostBar state={state} paused={paused} onTogglePause={() => setPaused((p) => !p)} /></div>
     </main>
   )
 }

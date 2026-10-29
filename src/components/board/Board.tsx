@@ -3,6 +3,7 @@ import type { PointerEvent } from 'react'
 import { audio } from '@/lib/audio'
 import { pointToValue } from '@/lib/dial-geometry'
 import { haptics } from '@/lib/haptics'
+import { cn } from '@/lib/utils'
 import { Needle } from './Needle'
 import { Wedges } from './Wedges'
 
@@ -16,9 +17,11 @@ export interface BoardProps {
   showTarget?: boolean
   glow?: boolean
   ghostDials?: { id: string; value: number; color: string }[]
+  needleColor?: string
+  className?: string
 }
 
-export function Board({ target, dial, onDialChange, interactive, showTarget, glow, ghostDials = [] }: BoardProps) {
+export function Board({ target, dial, onDialChange, interactive, showTarget, glow, ghostDials = [], needleColor, className }: BoardProps) {
   const faceId = `face-${useId().replace(/:/g, '')}`
   const svg = useRef<SVGSVGElement>(null)
   const lastTick = useRef(Math.round(dial / 2))
@@ -46,7 +49,7 @@ export function Board({ target, dial, onDialChange, interactive, showTarget, glo
     <svg
       ref={svg}
       viewBox="0 0 400 230"
-      className="w-full max-w-xl touch-none overflow-visible select-none"
+      className={cn('w-full max-w-xl touch-none overflow-visible select-none', className)}
       role="slider"
       aria-label={interactive ? 'Guess dial' : 'Dial position'}
       aria-readonly={interactive ? undefined : true}
@@ -98,7 +101,7 @@ export function Board({ target, dial, onDialChange, interactive, showTarget, glo
       ))}
       {showTarget && target != null && <Wedges target={target} cx={CX} cy={CY} />}
       {ghostDials.map((g) => <Needle key={g.id} value={g.value} cx={CX} cy={CY} r={150} color={g.color} />)}
-      <Needle value={dial} cx={CX} cy={CY} r={165} glow={glow} smooth={!interactive} />
+      <Needle value={dial} cx={CX} cy={CY} r={165} glow={glow} color={needleColor} smooth={!interactive} />
     </svg>
   )
 }

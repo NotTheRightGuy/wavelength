@@ -47,6 +47,8 @@ export function Dial({ state, refresh, watchOnly = false, broadcast = false }: {
   const [submitted, setSubmitted] = useState(false)
   const [pending, setPending] = useState(false)
   const fired = useRef(false)
+  // A deadline that passed before this screen mounted (reload) is left to the host fallback.
+  const [passedAtMount] = useState(() => (round.dial_deadline ? new Date(round.dial_deadline).getTime() <= Date.now() : false))
   const { secondsLeft, expired } = useDeadline(round.dial_deadline)
 
   const mine = state.guesses.find((g) => g.seat_id === state.my_seat)
@@ -69,7 +71,7 @@ export function Dial({ state, refresh, watchOnly = false, broadcast = false }: {
   }, [secondsLeft])
 
   useEffect(() => {
-    if (watchOnly || locked || !expired || fired.current) return
+    if (watchOnly || locked || !expired || passedAtMount || fired.current) return
     fired.current = true
     void lock(true)
     // eslint-disable-next-line react-hooks/exhaustive-deps
