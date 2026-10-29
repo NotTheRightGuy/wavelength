@@ -48,5 +48,13 @@ export function useRoom(code: string) {
     }
   }, [code, refresh])
 
+  // Free-play guesses are RLS-private, so the psychic/screen get no realtime events when a guesser locks in: poll the counter.
+  const pollLocked = state?.room.mode === 'free' && state.round?.phase === 'dial'
+  useEffect(() => {
+    if (!pollLocked) return
+    const id = setInterval(refresh, 2000)
+    return () => clearInterval(id)
+  }, [pollLocked, refresh])
+
   return { state, error, refresh }
 }
